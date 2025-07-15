@@ -25,17 +25,59 @@ const Game = () => {
 
     // マスがクリックされたとき
     const handleClick = (row: number, col:number) => {
-        // すでに石があるときはなにもしない
+        // --- ルールチェック ---
+        // 1.すでに石があるときはなにもしない
         if (board[row][col] !== 0) {
             return;
         }
-        // 新しい盤面データの作成
+        // 2.石をひっくり返すロジック
+        // ８方向のチェック（上下左右 + 斜め*4）
+        const directions = [
+            [-1, -1], [-1, 0], [-1, 1],
+            [0, -1],           [0, 1],
+            [1, -1], [1, 0], [1, 1],
+        ];
+
+        const tilesToFlip: [number, number][] = [];
+        const opponent = currentPlayer === 1 ? 2 : 1;
+
+        // 8方向をループでチェック
+        for (const [dr, dc] of directions) {
+            let r = row + dr;
+            let c = col + dc;
+            const potentialFlips: [number, number][] = [];
+
+            // 盤面の内側、かつ隣が相手の石であるときその方向に進む
+            while (r >= 0 && r < 8 && c >= 0 && c < 8 && board[r][c] === opponent) {
+                potentialFlips.push([r, c]);
+                r += dr;
+                c += dc;
+            }
+
+            // 進んだ先に自分の石がある=>挟んだ石はひっくり返る
+            if (r >= 0 && r < 8 && c >= 0 && c < 8 && board[r][c] === currentPlayer) {
+                tilesToFlip.push(...potentialFlips);
+            }
+        }
+
+        // 3.ひっくり返せる石がないときはその手は無効
+        if (tilesToFlip.length === 0) {
+            return;
+        }
+
+        // --- 盤面の更新 ---
         const newBoard = board.map(r => [...r]);
+        // クリックした場所に新たな石を配置
         newBoard[row][col] = currentPlayer;
+        // ひっくり返すリストにある石をすべて自分の色に変換
+        tilesToFlip.forEach(([r, c]) => {
+            newBoard[r][c] = currentPlayer;
+        });
+
         setBoard(newBoard);
 
         // プレイヤーの交代
-        setCurrentPlayer(currentPlayer === 1 ? 2 : 1);
+        setCurrentPlayer(opponent);
     };
 
     return (
