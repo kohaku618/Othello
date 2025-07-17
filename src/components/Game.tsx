@@ -1,6 +1,6 @@
 // ゲーム全体の管理
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Board from './Board';
 
 // マスの状態を定義（0: 空, 1: 黒, 2: 白）
@@ -22,6 +22,18 @@ const Game = () => {
 
     // 現在のプレイヤーを管理（1:黒, 2:白）
     const [currentPlayer, setCurrentPlayer] = useState<1 | 2>(1);
+
+    // useMemoを使いboardが変更されたときにスコアを再計算する
+    const score = useMemo(() => {
+        return board.flat().reduce(
+            (acc, cell) => {
+                if (cell === 1) acc.black++;
+                else if (cell === 2) acc.white++;
+                return acc;
+            },
+            { black: 0, white: 0}
+        );
+    }, [board]);
 
     // マスがクリックされたとき
     const handleClick = (row: number, col:number) => {
@@ -86,7 +98,10 @@ const Game = () => {
             <Board board={board} handleClick={handleClick} />
 
             {/* 現在のプレイヤーを表示する部分 */}
-            <h2>Current Player: {currentPlayer === 1 ? '⚫️ Black' : '⚪️ White'}</h2>
+            <div className="info">
+                <h2>Score: ⚫️ Black {score.black} - ⚪️ White {score.white}</h2>
+                <h2>Current Player: {currentPlayer === 1 ? '⚫️ Black' : '⚪️ White'}</h2>
+            </div>
         </div>
     );
 }
