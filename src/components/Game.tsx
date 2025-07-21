@@ -7,6 +7,18 @@ import Board from './Board';
 export type CellState = 0 | 1 | 2;
 export type BoardState = CellState[][];
 
+// 初期盤面を定数化
+const initialBoard: BoardState = [
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 2, 1, 0, 0, 0],
+    [0, 0, 0, 1, 2, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+];
+
 // 石をひっくり返すロジックを独立化
 const getFlippableTiles = (board: BoardState, row: number, col: number, player: 1 | 2) => {
     // すでに石がある or 盤面外なら空のリストを返す
@@ -45,18 +57,9 @@ const getFlippableTiles = (board: BoardState, row: number, col: number, player: 
 }
 
 const Game = () => {
-    // useStateで盤面の状態を記憶させる
-    const [board, setBoard] = useState<BoardState>([
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 2, 1, 0, 0, 0], // 2:白, 1:黒
-        [0, 0, 0, 1, 2, 0, 0, 0], // 1:黒, 2:白
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-    ]);
-
+    // useStateの初期値を持ってくる
+    const [board, setBoard] = useState<BoardState>(initialBoard);    
+    
     // 現在のプレイヤーを管理（1:黒, 2:白）
     const [currentPlayer, setCurrentPlayer] = useState<1 | 2>(1);
 
@@ -130,6 +133,13 @@ const Game = () => {
         setCurrentPlayer(currentPlayer === 1 ? 2 : 1);
     };
 
+    // ゲームをリセットする関数
+    const handleNewGame = () => {
+        setBoard(initialBoard);
+        setCurrentPlayer(1);
+        setIsGameOver(false);
+    };
+
     // 勝者を判定する
     const winner = score.black === score.white ? 'Draw' : score.black > score.white ? '⚫️ Black' : '⚪️ White';
 
@@ -148,6 +158,8 @@ const Game = () => {
                 ) : (
                     <h2>Current Player: {currentPlayer === 1 ? '⚫️ Black' : '⚪️ White'}</h2>
                 )}
+                {/*リセットボタン*/}
+                <button onClick={handleNewGame} style={{marginTop: '20px', padding: '10px 20px'}}>New Game</button>
             </div>
         </div>
     );
