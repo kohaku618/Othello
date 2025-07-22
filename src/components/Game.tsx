@@ -78,6 +78,21 @@ const Game = () => {
         );
     }, [board]);
 
+    // 現プレイヤーが置ける場所のリストを計算
+    const validMoves = useMemo(() => {
+        const moves: [number, number][] = [];
+        // 盤面のマスを全部チェック
+        for (let r = 0; r < 8; r++) {
+            for (let c = 0; c < 8; c++) {
+                // そのマスに置くとひっくり返せるか
+                if (getFlippableTiles(board, r, c, currentPlayer).length > 0) {
+                    moves.push([r, c]);
+                }
+            }
+        }
+        return moves;
+    }, [board, currentPlayer]);
+
     // ターンのたびにパスやゲーム終了を自動でチェック
     useEffect(() => {
         if (isGameOver) return; // ゲーム終了後は何もしない
@@ -146,7 +161,7 @@ const Game = () => {
     return (
         <div className="game">
             {/* Boardコンポーネントに盤面データ(board),handleClickを渡す */}
-            <Board board={board} handleClick={handleClick} />
+            <Board board={board} handleClick={handleClick} validMoves={validMoves} />
 
             {/* 現在のプレイヤーを表示する部分 */}
             <div className="info">

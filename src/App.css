@@ -26,6 +26,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
 }
 
 /* 石のスタイル */
@@ -34,6 +35,7 @@
   height: 80%;
   border-radius: 50%; /* 円形にする */
   box-shadow: 2px 2px 5px rgba(0,0,0,0.5); /* 立体感を出す影 */
+  z-index: 1;/* ヒントマーカーより前に表示 */
 }
 
 /* 黒石の色 */
@@ -44,4 +46,13 @@
 /* 白石の色 */
 .piece.white {
   background-color: #fff;
+}
+
+/* ヒントマーカー */
+.hint-marker {
+  width: 40%;
+  height: 40%;
+  background-color: rgba(0, 0, 0, 0.2); /* 黒色の20%の透明度 */
+  border-radius: 50%;
+  position: absolute; /* マスの中央に配置 */
 }
