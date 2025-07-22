@@ -19,7 +19,7 @@ const Cell = ({ state, onClick, isHint }: CellProps) => {
         <div className='cell' onClick={onClick}>
             {piece}
             {/* isHintがtrueの場合ヒントマーカーを表示 */}
-            {isHint && <div className='hint-marker'></div>}
+            {isHint && <div className='hint-marker'>🤡</div>}
         </div>
     );
 }

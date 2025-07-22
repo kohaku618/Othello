@@ -50,9 +50,17 @@
 
 /* ヒントマーカー */
 .hint-marker {
-  width: 40%;
-  height: 40%;
-  background-color: rgba(0, 0, 0, 0.2); /* 黒色の20%の透明度 */
-  border-radius: 50%;
-  position: absolute; /* マスの中央に配置 */
+  font-size: 2em;
+  color: rgba(0,0,0,0.5);
+
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  pointer-events: none;
 }
