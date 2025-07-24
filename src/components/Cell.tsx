@@ -9,9 +9,13 @@ type CellProps = {
 
 const Cell = ({ state, onClick, isHint }: CellProps) => {
     // stateが0でなければ石を表示する（0は空マス）
+    // 石を表裏ある構造として設定
     const piece = state !== 0 ? (
-        // stateが1なら'black', 2なら'white'のクラス名を付けて色を分ける
-        <div className={`piece ${state === 1 ? 'black' : 'white'}`}></div>
+        // 回転させるコンテナ「stateが2(白)の時、is－flippedクラスを付与」
+        <div className={`piece-container ${state === 2 ? 'is-flipped' : ''}`}>
+            <div className='piece-front'></div> {/* 表（黒） */}
+            <div className='piece-back'></div>  {/* 裏（白）*/}
+        </div>
     ) : null;
 
     return (
