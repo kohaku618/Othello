@@ -57,11 +57,15 @@ const getFlippableTiles = (board: BoardState, row: number, col: number, player: 
 }
 
 const Game = () => {
-    // useStateの初期値を持ってくる
-    const [board, setBoard] = useState<BoardState>(initialBoard);    
-    
-    // 現在のプレイヤーを管理（1:黒, 2:白）
-    const [currentPlayer, setCurrentPlayer] = useState<1 | 2>(1);
+    // 盤面の履歴を配列として管理
+    const [history, setHistory] = useState<BoardState[]>([initialBoard]);
+
+    // 現在の手数を管理
+    const [currentMove, setCurrentMove] = useState(0);
+
+    // 履歴と手数から現在の盤面とプレイヤーを算出
+    const board = history[currentMove];
+    const currentPlayer = currentMove % 2 === 0 ? 1 : 2;
 
     // ゲームが終了したか管理する状態
     const [isGameOver, setIsGameOver] = useState(false);
@@ -78,24 +82,13 @@ const Game = () => {
         );
     }, [board]);
 
-    // 現プレイヤーが置ける場所のリストを計算
-    const validMoves = useMemo(() => {
-        const moves: [number, number][] = [];
-        // 盤面のマスを全部チェック
-        for (let r = 0; r < 8; r++) {
-            for (let c = 0; c < 8; c++) {
-                // そのマスに置くとひっくり返せるか
-                if (getFlippableTiles(board, r, c, currentPlayer).length > 0) {
-                    moves.push([r, c]);
-                }
-            }
-        }
-        return moves;
-    }, [board, currentPlayer]);
+    // ★ [変更] ヒント機能は後で対応するため、一旦機能を停止
+    const validMoves: [number, number][] = [];
 
     // ターンのたびにパスやゲーム終了を自動でチェック
     useEffect(() => {
-        if (isGameOver) return; // ゲーム終了後は何もしない
+        // 最新の手でないときやゲーム終了時は何も行わない
+        if (isGameOver || history.length - 1 !== currentMove) return; 
 
         // 現在のプレイヤーが置ける場所があるかチェック
         const canCurrentPlayerMove = board.flat().some((_cell, i) =>
@@ -112,18 +105,20 @@ const Game = () => {
             if (canOpponentMove) {
                 // 相手だけおけるならパス
                 alert((currentPlayer === 1 ? '黒' : '白') + 'は置ける場所がないためパスになります。');
-                setCurrentPlayer(opponent);
+                // パスの場合次の手を履歴に追加
+                setHistory(prevHistory => [...prevHistory, board]); // 盤面変えずに手番を追加
+                setCurrentMove(move => move + 1);
             } else {
                 // どちらも置けないならゲーム終了
                 setIsGameOver(true);
             }
         }
-    }, [board, currentPlayer, isGameOver]);
+    }, [board, currentPlayer, isGameOver, history, currentMove]);
 
     // マスがクリックされたとき
     const handleClick = (row: number, col:number) => {
         // --- ルールチェック ---
-        if (isGameOver) return;
+        if (isGameOver || history.length - 1 !== currentMove) return;
 
         // 石を置けるのか、ひっくり返すのかを判定する（上記の関数を呼び出し）
         const tilesToFlip  = getFlippableTiles(board, row, col, currentPlayer);
@@ -142,18 +137,26 @@ const Game = () => {
             newBoard[r][c] = currentPlayer;
         });
 
-        setBoard(newBoard);
-
-        // プレイヤーの交代
-        setCurrentPlayer(currentPlayer === 1 ? 2 : 1);
+        // 新しい盤面を履歴に追加して手数を進める
+        const newHistory = [...history, newBoard];
+        setHistory(newHistory);
+        setCurrentMove(newHistory.length - 1);
     };
 
     // ゲームをリセットする関数
     const handleNewGame = () => {
-        setBoard(initialBoard);
-        setCurrentPlayer(1);
+        setHistory([initialBoard]);
+        setCurrentMove(0);
         setIsGameOver(false);
     };
+
+    // 一手戻す関数
+    const handleUndo = () => {
+        if (currentMove > 0) {
+            setIsGameOver(false); // ゲームオーバー状態の解除
+            setCurrentMove(move => move - 1);
+        }
+    }
 
     // 勝者を判定する
     const winner = score.black === score.white ? 'Draw' : score.black > score.white ? '⚫️ Black' : '⚪️ White';
@@ -175,6 +178,8 @@ const Game = () => {
                 )}
                 {/*リセットボタン*/}
                 <button onClick={handleNewGame} style={{marginTop: '20px', padding: '10px 20px'}}>New Game</button>
+                {/* Undoボタン */}
+                <button onClick={handleUndo} disabled={currentMove === 0} style={{marginTop: '20px', marginLeft: '10px', padding: '10px 20px'}}>Undo</button>
             </div>
         </div>
     );
