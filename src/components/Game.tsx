@@ -82,8 +82,23 @@ const Game = () => {
         );
     }, [board]);
 
-    // ★ [変更] ヒント機能は後で対応するため、一旦機能を停止
-    const validMoves: [number, number][] = [];
+    // 現プレイヤーが置ける場所のリストを計算する
+    const validMoves = useMemo(() => {
+        // ゲームオーバーの時や最新の手を見ていないときはヒント不要
+        if (isGameOver) return [];
+
+        const moves: [number, number][] = [];
+        // 盤面のマスをチェック
+        for (let r = 0; r < 8; r++) {
+            for (let c = 0; c < 8; c++) {
+                // そのマスに置くとひっくり返るかの判定
+                if (getFlippableTiles(board, r, c, currentPlayer).length > 0) {
+                    moves.push([r,c]);
+                }
+            }
+        }
+        return moves;
+    }, [board, currentPlayer, isGameOver]);
 
     // ターンのたびにパスやゲーム終了を自動でチェック
     useEffect(() => {
@@ -118,7 +133,7 @@ const Game = () => {
     // マスがクリックされたとき
     const handleClick = (row: number, col:number) => {
         // --- ルールチェック ---
-        if (isGameOver || history.length - 1 !== currentMove) return;
+        if (isGameOver) return;
 
         // 石を置けるのか、ひっくり返すのかを判定する（上記の関数を呼び出し）
         const tilesToFlip  = getFlippableTiles(board, row, col, currentPlayer);
@@ -137,10 +152,12 @@ const Game = () => {
             newBoard[r][c] = currentPlayer;
         });
 
-        // 新しい盤面を履歴に追加して手数を進める
-        const newHistory = [...history, newBoard];
-        setHistory(newHistory);
-        setCurrentMove(newHistory.length - 1);
+        // 一手戻した場合履歴を切り取る
+        const newHistory = history.slice(0, currentMove + 1);
+        // 切り取った履歴に新しい盤面を追加
+        setHistory([...newHistory, newBoard]);
+        // 手数を新しい履歴の最後に更新
+        setCurrentMove(newHistory.length);
     };
 
     // ゲームをリセットする関数
