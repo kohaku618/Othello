@@ -30,22 +30,41 @@
 }
 
 /* 石のスタイル */
-.piece {
+.piece-container {
   width: 80%;
   height: 80%;
-  border-radius: 50%; /* 円形にする */
-  box-shadow: 2px 2px 5px rgba(0,0,0,0.5); /* 立体感を出す影 */
-  z-index: 1;/* ヒントマーカーより前に表示 */
+  position: relative;
+  transition: transform 0.6s; /*アニメーション時間0.6s*/
+  transform-style: preserve-3d;/*3D空間で変形させる宣言*/
+  z-index: 10;/*ヒントマーカーより手前に表示*/
 }
 
-/* 黒石の色 */
-.piece.black {
+/*回転*/
+.piece-container.is-flipped {
+  transform: rotateY(180deg);
+}
+
+/*石の表裏共通*/
+.piece-front,
+.piece-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/*黒石*/
+.piece-front {
   background-color: #000;
 }
 
-/* 白石の色 */
-.piece.white {
+/*色石*/
+.piece-back {
   background-color: #fff;
+  transform: rotateY(180deg); /*初期状態で裏*/
 }
 
 /* ヒントマーカー */
