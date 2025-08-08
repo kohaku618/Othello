@@ -63,6 +63,9 @@ const Game = () => {
     // 現在の手数を管理
     const [currentMove, setCurrentMove] = useState(0);
 
+    // ゲームモード管理(pvp or pve)
+    const [gameMode, setGameMode] = useState<'pvp' | 'pve'>('pvp');
+
     // 履歴と手数から現在の盤面とプレイヤーを算出
     const board = history[currentMove];
     const currentPlayer = currentMove % 2 === 0 ? 1 : 2;
@@ -130,10 +133,26 @@ const Game = () => {
         }
     }, [board, currentPlayer, isGameOver, history, currentMove]);
 
+    // AIの思考ルーチンの設定
+    useEffect(() => {
+        if (isGameOver || gameMode !== 'pve' || currentPlayer !== 2) return;
+
+        const timer = setTimeout(() => {
+            if (validMoves.length > 0) {
+                const randomMove = validMoves[Math.floor(Math.random() * validMoves.length)];
+                handleClick(randomMove[0], randomMove[1]);
+            }
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [currentPlayer, gameMode, validMoves, isGameOver, history]);
+
     // マスがクリックされたとき
     const handleClick = (row: number, col:number) => {
         // --- ルールチェック ---
         if (isGameOver) return;
+
+        // AIのターン中人間のクリックを規制
+        if (gameMode === 'pve' && currentPlayer === 2) return;
 
         // 石を置けるのか、ひっくり返すのかを判定する（上記の関数を呼び出し）
         const tilesToFlip  = getFlippableTiles(board, row, col, currentPlayer);
@@ -193,6 +212,11 @@ const Game = () => {
                 ) : (
                     <h2>Current Player: {currentPlayer === 1 ? '⚫️ Black' : '⚪️ White'}</h2>
                 )}
+                {/* ゲームモード選択ボタン */}
+                <div style={{ margin: '10px 0'  }}>
+                    <button onClick={() => { setGameMode('pvp'); handleNewGame(); }}>PvP</button>
+                    <button onClick={() => { setGameMode('pve'); handleNewGame(); }} style={{marginLeft: '10px' }}>PvE</button>
+                </div>
                 {/*リセットボタン*/}
                 <button onClick={handleNewGame} style={{marginTop: '20px', padding: '10px 20px'}}>New Game</button>
                 {/* Undoボタン */}
